@@ -251,7 +251,7 @@ def simulate_cloth():
 
     plt.ion()
 
-    for i in range(400):
+    for i in range(5):
         plt.clf()
         pts = np.array([[p.x, p.y] for p in c.normalpts])
         cpts = np.array([[p.x, p.y] for p in c.circlepts])
