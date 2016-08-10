@@ -1,3 +1,4 @@
+import ray
 import matplotlib.pyplot as plt
 import numpy as np
 from math import sqrt
@@ -232,7 +233,8 @@ class Mouse:
         self.y = y
 
 
-if __name__ == "__main__":
+@ray.remote([], [int])
+def simulate_cloth():
 
     mouse = Mouse(0, 300, 0, 100)
     mouse.down = True
@@ -277,3 +279,18 @@ if __name__ == "__main__":
 
         #     c.tension(-1, 1, 1)
 
+    # return something, so that we can call ray.get to wait for this task to finish
+    return 0
+
+if __name__ == "__main__":
+
+    ray.init(start_ray_local=True, num_workers=2)
+
+    # launch two simulations in parallel
+    result1 = simulate_cloth.remote()
+    result2 = simulate_cloth.remote()
+
+    # wait for the first simulation to finish
+    ray.get(result1)
+    # wait for the second simulation to finish
+    ray.get(result2)
