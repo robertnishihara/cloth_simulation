@@ -4,7 +4,8 @@ from math import sqrt
 
 class Point:
 
-    def __init__(self, x=0, y=0, z=0):
+    def __init__(self, mouse, x=0, y=0, z=0):
+        self.mouse = mouse
         self.x = x
         self.y = y
         self.z = z
@@ -46,18 +47,18 @@ class Point:
         elif self.z <= -boundsz:
             self.z = -2 * boundsz - self.z
 
-    def update(self, delta, mouse):
-        if mouse.down:
-            dx = self.x - mouse.x
-            dy = self.y - mouse.y
-            dz = self.z - mouse.z
+    def update(self, delta):
+        if self.mouse.down:
+            dx = self.x - self.mouse.x
+            dy = self.y - self.mouse.y
+            dz = self.z - self.mouse.z
             dist = sqrt(dx ** 2 + dy ** 2)
 
-            if mouse.button == 1:
-                if dist < mouse.influence:
-                    self.px = self.x - (mouse.x - mouse.px) * 1.8
-                    self.py = self.y - (mouse.y - mouse.py) * 1.8
-            elif dist < mouse.cut and (not mouse.height_limit or abs(dz) < mouse.height_limit):
+            if self.mouse.button == 1:
+                if dist < self.mouse.influence:
+                    self.px = self.x - (self.mouse.x - self.mouse.px) * 1.8
+                    self.py = self.y - (self.mouse.y - self.mouse.py) * 1.8
+            elif dist < self.mouse.cut and (not self.mouse.height_limit or abs(dz) < self.mouse.height_limit):
                 print dz
                 self.constraints = []
 
@@ -119,11 +120,12 @@ class Constraint:
 
 class Cloth:
 
-    def __init__(self, width, height, dx, dy):
+    def __init__(self, mouse, width, height, dx, dy):
+        self.mouse = mouse
         self.pts = []
         for i in range(height):
             for j in range(width):
-                pt = Point(50 + dx * j, 50 + dy * i)
+                pt = Point(self.mouse, 50 + dx * j, 50 + dy * i)
                 if i > 0:
                     pt.add_constraint(self.pts[width * (i - 1) + j])
                 if j > 0:
@@ -140,21 +142,22 @@ class Cloth:
             for pt in self.pts:
                 pt.resolve_constraints()
         for pt in self.pts:
-            pt.update(0.016, mouse)
+            pt.update(0.016, self.mouse)
         for pt in self.pts:
             if pt.constraints == []:
                 self.pts.remove(pt)
 
 class CircleCloth(Cloth):
 
-    def __init__(self, width, height, dx, dy, centerx, centery, radius):
+    def __init__(self, mouse, width, height, dx, dy, centerx, centery, radius):
+        self.mouse = mouse
         self.pts = []
         self.circlepts = []
         self.normalpts = []
         self.grabbed_pts = []
         for i in range(height):
             for j in range(width):
-                pt = Point(50 + dx * j, 50 + dy * i)
+                pt = Point(self.mouse, 50 + dx * j, 50 + dy * i)
                 if i > 0:
                     pt.add_constraint(self.pts[width * (i - 1) + j])
                 if j > 0:
@@ -174,7 +177,7 @@ class CircleCloth(Cloth):
             for pt in self.pts:
                 pt.resolve_constraints()
         for pt in self.pts:
-            pt.update(0.016, mouse)
+            pt.update(0.016)
         for pt in self.pts:
             if pt.constraints == []:
                 self.pts.remove(pt)
@@ -239,7 +242,7 @@ if __name__ == "__main__":
     circley = 300
     radius = 150
 
-    c = CircleCloth(100, 100, 5,5, circlex, circley, radius)
+    c = CircleCloth(mouse, 100, 100, 5,5, circlex, circley, radius)
     c.update()
 
     c.pin_position(circlex, circley)
